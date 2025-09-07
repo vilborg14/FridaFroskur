@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="utf-8" />
+  <title>TÖL105M – Frogger beinagrind</title>
+</head>
+<body>
+  <h1>Verkefni 1, Fríða froskur!</h1>
+
+  <canvas id="gl-canvas" width="512" height="512"></canvas>
+  <p>Stig: <span id="score">0</span></p>
+
+  <!-- Common skrár úr Angel safninu -->
+  <script type="text/javascript" src="../Common/webgl-utils.js"></script>
+  <script type="text/javascript" src="../Common/initShaders.js"></script>
+  <script type="text/javascript" src="../Common/MV.js"></script>
+
+  <!-- Vertex shader -->
+  <script id="vertex-shader" type="x-shader/x-vertex">
+    attribute vec2 vPosition;
+    uniform vec2 uTranslate;
+    uniform vec2 uScale;
+
+    void main() {
+      vec2 pos = vPosition * uScale + uTranslate;
+      gl_Position = vec4(pos, 0.0, 1.0);
+    }
+  </script>
+
+  <!-- Fragment shader -->
+  <script id="fragment-shader" type="x-shader/x-fragment">
+    precision mediump float;
+    uniform vec4 uColor;
+    void main() {
+      gl_FragColor = uColor;
+    }
+  </script>
+
+  <script type="text/javascript" src="fridafroskur.js"></script>
+</body>
+</html>
