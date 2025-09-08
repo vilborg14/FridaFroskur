@@ -12,8 +12,7 @@ var quadBuffer, triBuffer;
 // Leikbreytur
 var score = 0;
 
-// (NDC [-1,1])
-var LANE_COUNT = 3;
+var LANE_COUNT = 5;
 var roadTop = 0.6;
 var roadBottom = -0.6;
 var sidewalkH = 0.15;
@@ -23,11 +22,11 @@ var hopRows = (function () {
   var rows = [];
   var laneH = (roadTop - roadBottom) / LANE_COUNT;
 
-  rows.push(roadBottom - sidewalkH * 0.5); // neðri gangstéttar-miðja
+  rows.push(roadBottom - sidewalkH * 0.5); 
   for (var i = 0; i < LANE_COUNT; i++) {
-    rows.push(roadBottom + laneH * (i + 0.5)); // miðjur brauta
+    rows.push(roadBottom + laneH * (i + 0.5));
   }
-  rows.push(roadTop + sidewalkH * 0.5); // efri gangstéttar-miðja
+  rows.push(roadTop + sidewalkH * 0.5); 
   return rows;
 })();
 
@@ -44,8 +43,8 @@ var frog = {
 function frogY() { return hopRows[frog.row]; }
 
 
-var LANE_SPEEDS = [0.35, 0.50, 0.70];  
-var LANE_DIRS   = [+1, -1, +1];
+var LANE_SPEEDS = [0.35, 0.45, 0.60, 0.75, 0.90];  
+var LANE_DIRS   = [+1, -1, +1, -1, +1];
 
 // Bílar
 function makeCar(laneIndex, xStartFactor) {
@@ -67,8 +66,10 @@ function makeCar(laneIndex, xStartFactor) {
 
 var cars = [
   makeCar(0, 0.00),
-  makeCar(1, 0.35),
-  makeCar(2, 0.70),
+  makeCar(1, 0.25),
+  makeCar(2, 0.50),
+  makeCar(3, 0.75),
+  makeCar(4, 1.00),
 ];
 
 
@@ -77,7 +78,7 @@ window.onload = function init() {
   canvas = document.getElementById("gl-canvas");
   scoreEl = document.getElementById("score");
 
-  //nýtt
+  
   frog.row = 0;   
   frog.dirY = +1;
 
@@ -121,7 +122,7 @@ window.onload = function init() {
   window.requestAnimFrame(render);
 };
 
-// Teikniföll
+// Föllin sem teikna
 function bindAndDraw(buffer, count) {
   gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
   gl.vertexAttribPointer(vPositionLoc, 2, gl.FLOAT, false, 0, 0);
@@ -161,9 +162,9 @@ function drawScene() {
   }
 }
 
-// Hreyfingar & Árekstrar
+// Hreyfingar + Árekstrar
 function aabbIntersect(ax, ay, aw, ah, bx, by, bw, bh) {
-  // AABB (miðja + hálfbreiddir/hálfhæðir)
+  // AABB 
   return Math.abs(ax - bx) * 2 < (aw + bw) && Math.abs(ay - by) * 2 < (ah + bh);
 }
 
@@ -186,7 +187,7 @@ function update(dt) {
     if (c.dir < 0 && c.x + c.w/2 < -1.2) c.x =  1.2 + c.w/2;
   }
 
-  /// Árekstrar: nota y-miðju frá row
+  /// Árekstrar: nota y frá row
 var fy = frogY();
 for (var i=0; i<cars.length; i++) {
   var c = cars[i];
@@ -196,17 +197,17 @@ for (var i=0; i<cars.length; i++) {
   }
 }
 
-// Stig: toppur/botn eftir hoppi (row)
-if (frog.dirY > 0 && frog.row === hopRows.length - 1) {
-  score++;
-  scoreEl.textContent = score;
-  frog.dirY = -1; // snúa við
-}
-if (frog.dirY < 0 && frog.row === 0) {
-  score++;
-  scoreEl.textContent = score;
-  frog.dirY = +1; // snúa við
-}
+// Stig: toppur/botn eftir röð
+//if (frog.dirY > 0 && frog.row === hopRows.length - 1) {
+//  score++;
+//  scoreEl.textContent = score;
+//  frog.dirY = -1; // snúa við
+//}
+//if (frog.dirY < 0 && frog.row === 0) {
+//  score++;
+//  scoreEl.textContent = score;
+//  frog.dirY = +1; // snúa við
+//}
 
 }
 
@@ -219,15 +220,26 @@ function onKeyDown(e) {
     case 39: // hægri
       frog.x = Math.min( 1 - frog.w/2, frog.x + frog.stepX);
       break;
-    case 38: // ↑
+    case 38: // upp
+      var prevRow=frog.row
       frog.row = Math.min(hopRows.length - 1, frog.row + 1);
       frog.dirY = +1;
+      if (prevRow === hopRows.length - 2 && frog.row === hopRows.length - 1) {
+      score++;
+      scoreEl.textContent = score;
+      frog.dirY = -1; 
+        }
       break;
-    case 40: // ↓
+    case 40: // niður
+      var prevRow = frog.row
       frog.row = Math.max(0, frog.row - 1);
       frog.dirY = -1;
+      if (prevRow === 1 && frog.row === 0) {
+      score++;
+      scoreEl.textContent = score;
+      frog.dirY 
       break;
-
+      }
     default:
       return;
   }
