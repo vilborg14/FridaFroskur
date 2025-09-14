@@ -9,7 +9,7 @@ var vPositionLoc, uTranslateLoc, uScaleLoc, uColorLoc;
 // Buffers
 var quadBuffer, triBuffer;
 
-// Leikbreytur
+// Breytur
 var score = 0;
 
 var LANE_COUNT = 5;
@@ -104,7 +104,7 @@ window.onload = function init() {
   gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, flatten(quad), gl.STATIC_DRAW);
 
-  // Þríhyrningur snýr upp
+  
   var tri = [
     vec2(0.0,  0.6),
     vec2(-0.6, -0.6),
@@ -114,10 +114,10 @@ window.onload = function init() {
   gl.bindBuffer(gl.ARRAY_BUFFER, triBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, flatten(tri), gl.STATIC_DRAW);
 
-  // Inntak
+
   window.addEventListener("keydown", onKeyDown);
 
-  // Ræsa lykkju
+
   lastTime = performance.now();
   window.requestAnimFrame(render);
 };
@@ -143,6 +143,14 @@ function drawTriangle(x, y, w, h, color, flipY) {
   gl.uniform4fv(uColorLoc,     color);
   bindAndDraw(triBuffer, 3);
 }
+function drawDashedLineAcrossRoad(y, dashW = 0.12, gapW = 0.08, thick = 0.02, color = vec4(1,1,1,1)) {
+  // hvít punktalína
+  var cx = -1 + dashW * 0.5;
+  while (cx < 1) {
+    drawRect(cx, y, dashW, thick, color);
+    cx += dashW + gapW;
+  }
+}
 
 function drawScene() {
   // Gangstéttir
@@ -151,6 +159,13 @@ function drawScene() {
 
   // Gata
   drawRect(0, (roadTop+roadBottom)/2.0, 2.0, (roadTop-roadBottom), vec4(0.15,0.15,0.18,1));
+
+  // Línur á milli
+  var laneH = (roadTop - roadBottom) / LANE_COUNT;
+  for (var i = 1; i < LANE_COUNT; i++) {
+  var y = roadBottom + laneH * i;        
+  drawDashedLineAcrossRoad(y, 0.12, 0.08, 0.02, vec4(1,1,1,1));
+}
 
   // Fríða 
   drawTriangle(frog.x, frogY(), frog.w, frog.h, vec4(0.1,0.7,0.2,1), frog.dirY < 0);
@@ -162,7 +177,7 @@ function drawScene() {
   }
 }
 
-// Hreyfingar + Árekstrar
+// Hreyfingar og Árekstrar
 function aabbIntersect(ax, ay, aw, ah, bx, by, bw, bh) {
   // AABB 
   return Math.abs(ax - bx) * 2 < (aw + bw) && Math.abs(ay - by) * 2 < (ah + bh);
@@ -197,30 +212,22 @@ for (var i=0; i<cars.length; i++) {
   }
 }
 
-// Stig: toppur/botn eftir röð
-//if (frog.dirY > 0 && frog.row === hopRows.length - 1) {
-//  score++;
-//  scoreEl.textContent = score;
-//  frog.dirY = -1; // snúa við
-//}
-//if (frog.dirY < 0 && frog.row === 0) {
-//  score++;
-//  scoreEl.textContent = score;
-//  frog.dirY = +1; // snúa við
-//}
 
 }
 
 // Inntak
 function onKeyDown(e) {
   switch (e.keyCode) {
-    case 37: // vinstri
+    // vinstri
+    case 37: 
       frog.x = Math.max(-1 + frog.w/2, frog.x - frog.stepX);
       break;
-    case 39: // hægri
+    // hægri
+    case 39: 
       frog.x = Math.min( 1 - frog.w/2, frog.x + frog.stepX);
       break;
-    case 38: // upp
+      // upp
+    case 38: 
       var prevRow=frog.row
       frog.row = Math.min(hopRows.length - 1, frog.row + 1);
       frog.dirY = +1;
@@ -230,7 +237,8 @@ function onKeyDown(e) {
       frog.dirY = -1; 
         }
       break;
-    case 40: // niður
+      // niður
+    case 40: 
       var prevRow = frog.row
       frog.row = Math.max(0, frog.row - 1);
       frog.dirY = -1;
